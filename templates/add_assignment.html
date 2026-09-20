@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}Add assignment | StudentHub{% endblock %}
+{% block description %}Add an assignment to your StudentHub workspace.{% endblock %}
+
+{% block content %}
+<section class="page-hero form-page">
+    <div class="container form-card">
+        <p class="section-kicker">Stay organized</p>
+        <h1>Add an <span>assignment.</span></h1>
+        {% if error %}<p class="form-error" role="alert">{{ error }}</p>{% endif %}
+        <form class="auth-form" action="{{ url_for('add_assignment') }}" method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <label for="title">Title</label>
+            <input id="title" name="title" type="text" value="{{ form.get('title', '') }}" required>
+            <label for="description">Description</label>
+            <textarea id="description" name="description">{{ form.get('description', '') }}</textarea>
+            <label for="subject">Subject</label>
+            <input id="subject" name="subject" type="text" value="{{ form.get('subject', '') }}" required>
+            <label for="due-date">Due date</label>
+            <input id="due-date" name="due_date" type="date" value="{{ form.get('due_date', '') }}" required>
+            <label for="status">Status</label>
+            <select id="status" name="status" required>
+                <option value="Pending" {% if form.get('status', 'Pending') == 'Pending' %}selected{% endif %}>Pending</option>
+                <option value="Completed" {% if form.get('status') == 'Completed' %}selected{% endif %}>Completed</option>
+            </select>
+            <button class="button button-primary" type="submit">Save assignment</button>
+        </form>
+    </div>
+</section>
+{% endblock %}

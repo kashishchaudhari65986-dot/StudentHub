@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Notes | StudentHub{% endblock %}
+{% block description %}Keep your study notes organized in StudentHub.{% endblock %}
+
+{% block content %}
+<section class="page-hero note-page" data-note-page>
+    <div class="container">
+        <div class="assignment-header">
+            <div>
+                <p class="section-kicker">Keep learning</p>
+                <h1>Your <span>notes.</span></h1>
+            </div>
+            <a class="button button-primary" href="{{ url_for('add_note') }}">Add note</a>
+        </div>
+        <p class="form-message" data-note-message role="status" aria-live="polite"></p>
+        <div style="margin-bottom: 1.5rem;">
+            <label style="display: block;">
+                <span class="section-kicker" style="display: block; margin-bottom: 0.5rem;">Search</span>
+                <input type="search" data-note-search placeholder="Search by title, subject, or content" style="width: 100%; max-width: 480px; padding: 0.9rem 1rem; border-radius: 8px; border: 1px solid #dfe1ef;">
+            </label>
+        </div>
+        <form class="form-card note-api-form" data-note-form>
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <p class="section-kicker">Quick add</p>
+            <h2>Add a note with JavaScript.</h2>
+            <div class="auth-form">
+                <label for="api-note-title">Title</label>
+                <input id="api-note-title" name="title" type="text" required>
+                <label for="api-note-subject">Subject</label>
+                <input id="api-note-subject" name="subject" type="text" required>
+                <label for="api-note-content">Content</label>
+                <textarea id="api-note-content" name="content" required></textarea>
+                <button class="button button-primary" type="submit">Save with API</button>
+            </div>
+        </form>
+        <div data-note-list></div>
+        <div class="form-card" data-note-empty hidden>
+            <p class="section-kicker">Nothing here yet</p>
+            <h2>Add your first note.</h2>
+            <p class="form-footer">Create a note to keep your study ideas close.</p>
+        </div>
+    </div>
+</section>
+{% endblock %}

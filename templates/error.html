@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Error {{ status_code }} | StudentHub{% endblock %}
+
+{% block content %}
+<section class="page-hero form-page">
+    <div class="container form-card">
+        <p class="section-kicker">Something went wrong</p>
+        <h1>Error <span>{{ status_code }}</span></h1>
+        <p class="form-footer">{{ message }}</p>
+        <a class="button button-primary" href="{{ url_for('home') }}">Return home</a>
+    </div>
+</section>
+{% endblock %}

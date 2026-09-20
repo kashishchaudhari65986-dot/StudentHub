@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard | StudentHub{% endblock %}
+{% block description %}Your StudentHub dashboard.{% endblock %}
+
+{% block content %}
+<section class="page-hero assignment-page" data-dashboard-page>
+    <div class="container">
+        <div class="assignment-header">
+            <div>
+                <p class="section-kicker">Your workspace</p>
+                <h1>Welcome, <span>{{ user.name }}</span></h1>
+            </div>
+            <form action="{{ url_for('logout') }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="button button-secondary" type="submit">Log out</button>
+            </form>
+        </div>
+
+        <div class="assignment-list" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); margin-bottom: 2rem;">
+            <article class="assignment-card">
+                <p class="section-kicker">Assignments</p>
+                <h2 data-stat="assignments">Loading...</h2>
+                <p class="form-footer">Total assignments</p>
+            </article>
+            <article class="assignment-card">
+                <p class="section-kicker">Pending</p>
+                <h2 data-stat="pending_assignments">Loading...</h2>
+                <p class="form-footer">Pending assignments</p>
+            </article>
+            <article class="assignment-card">
+                <p class="section-kicker">Completed</p>
+                <h2 data-stat="completed_assignments">Loading...</h2>
+                <p class="form-footer">Completed assignments</p>
+            </article>
+            <article class="assignment-card">
+                <p class="section-kicker">Notes</p>
+                <h2 data-stat="notes">Loading...</h2>
+                <p class="form-footer">Total notes</p>
+            </article>
+            <article class="assignment-card">
+                <p class="section-kicker">Tasks</p>
+                <h2 data-stat="tasks">Loading...</h2>
+                <p class="form-footer">Total tasks</p>
+            </article>
+            <article class="assignment-card">
+                <p class="section-kicker">Completed</p>
+                <h2 data-stat="completed_tasks">Loading...</h2>
+                <p class="form-footer">Completed tasks</p>
+            </article>
+            <article class="assignment-card">
+                <p class="section-kicker">Pending</p>
+                <h2 data-stat="pending_tasks">Loading...</h2>
+                <p class="form-footer">Pending tasks</p>
+            </article>
+        </div>
+
+        <div class="assignment-list" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin-bottom: 2rem;">
+            <div class="assignment-card">
+                <p class="section-kicker">Quick links</p>
+                <h2>Assignments</h2>
+                <div class="assignment-actions" style="flex-wrap: wrap; margin-top: 1rem;">
+                    <a class="button button-primary" href="{{ url_for('assignments') }}">Open assignments</a>
+                </div>
+            </div>
+            <div class="assignment-card">
+                <p class="section-kicker">Quick links</p>
+                <h2>Notes</h2>
+                <div class="assignment-actions" style="flex-wrap: wrap; margin-top: 1rem;">
+                    <a class="button button-secondary" href="{{ url_for('notes') }}">Open notes</a>
+                </div>
+            </div>
+            <div class="assignment-card">
+                <p class="section-kicker">Quick links</p>
+                <h2>Tasks</h2>
+                <div class="assignment-actions" style="flex-wrap: wrap; margin-top: 1rem;">
+                    <a class="button button-secondary" href="{{ url_for('tasks') }}">Open tasks</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="assignment-list" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); margin-top: 1rem;">
+            <article class="assignment-card">
+                <p class="section-kicker">Recent assignments</p>
+                <h2>Upcoming work</h2>
+                <div data-dashboard-recent-assignments>
+                    <p class="form-footer">Loading...</p>
+                </div>
+                <div class="form-card" data-dashboard-empty-assignments hidden style="width:100%; margin:1rem 0 0; padding: 1.2rem;">
+                    <p class="section-kicker">No assignments yet</p>
+                    <h2>Create your first assignment.</h2>
+                </div>
+            </article>
+            <article class="assignment-card">
+                <p class="section-kicker">Recent tasks</p>
+                <h2>Upcoming tasks</h2>
+                <div data-dashboard-recent-tasks>
+                    <p class="form-footer">Loading...</p>
+                </div>
+                <div class="form-card" data-dashboard-empty-tasks hidden style="width:100%; margin:1rem 0 0; padding: 1.2rem;">
+                    <p class="section-kicker">No tasks yet</p>
+                    <h2>Create your first task.</h2>
+                </div>
+            </article>
+        </div>
+
+        <p class="form-message" data-dashboard-error role="status" aria-live="polite" hidden></p>
+    </div>
+</section>
+{% endblock %}

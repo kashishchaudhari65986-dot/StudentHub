@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}Add task | StudentHub{% endblock %}
+{% block description %}Add a task to your StudentHub workspace.{% endblock %}
+
+{% block content %}
+<section class="page-hero form-page">
+    <div class="container form-card">
+        <p class="section-kicker">Take the next step</p>
+        <h1>Add a <span>task.</span></h1>
+        {% if error %}<p class="form-error" role="alert">{{ error }}</p>{% endif %}
+        <form class="auth-form" action="{{ url_for('add_task') }}" method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <label for="title">Title</label>
+            <input id="title" name="title" type="text" value="{{ form.get('title', '') }}" required>
+            <label for="description">Description</label>
+            <textarea id="description" name="description">{{ form.get('description', '') }}</textarea>
+            <label for="due-date">Due date</label>
+            <input id="due-date" name="due_date" type="date" value="{{ form.get('due_date', '') }}" required>
+            <button class="button button-primary" type="submit">Add task</button>
+        </form>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Assignments | StudentHub{% endblock %}
+{% block description %}Keep track of your assignments and deadlines in StudentHub.{% endblock %}
+
+{% block content %}
+<section class="page-hero assignment-page" data-assignment-page>
+    <div class="container">
+        <div class="assignment-header">
+            <div>
+                <p class="section-kicker">Stay on track</p>
+                <h1>Your <span>assignments.</span></h1>
+            </div>
+            <a class="button button-primary" href="{{ url_for('add_assignment') }}">Add assignment</a>
+        </div>
+        <p class="form-message" data-assignment-message role="status" aria-live="polite"></p>
+        <div class="assignment-actions" style="flex-wrap: wrap; margin-bottom: 1.5rem;">
+            <label style="flex: 1 1 220px; min-width: 220px;">
+                <span class="section-kicker" style="display: block; margin-bottom: 0.5rem;">Search</span>
+                <input type="search" data-assignment-search placeholder="Search by title or subject" style="width: 100%; padding: 0.9rem 1rem; border-radius: 8px; border: 1px solid #dfe1ef;">
+            </label>
+            <label style="flex: 0 0 180px; min-width: 180px;">
+                <span class="section-kicker" style="display: block; margin-bottom: 0.5rem;">Status</span>
+                <select data-assignment-status-filter style="width: 100%; padding: 0.9rem 1rem; border-radius: 8px; border: 1px solid #dfe1ef;">
+                    <option value="All">All</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Completed">Completed</option>
+                </select>
+            </label>
+        </div>
+        <form class="form-card assignment-api-form" data-assignment-form>
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <p class="section-kicker">Quick add</p>
+            <h2>Add an assignment with JavaScript.</h2>
+            <div class="auth-form">
+                <label for="api-title">Title</label>
+                <input id="api-title" name="title" type="text" required>
+                <label for="api-description">Description</label>
+                <textarea id="api-description" name="description"></textarea>
+                <label for="api-subject">Subject</label>
+                <input id="api-subject" name="subject" type="text" required>
+                <label for="api-due-date">Due date</label>
+                <input id="api-due-date" name="due_date" type="date" required>
+                <label for="api-status">Status</label>
+                <select id="api-status" name="status" required>
+                    <option value="Pending">Pending</option>
+                    <option value="Completed">Completed</option>
+                </select>
+                <button class="button button-primary" type="submit">Save with API</button>
+            </div>
+        </form>
+        {% if assignments %}
+        <div class="assignment-list" data-assignment-list>
+            {% for assignment in assignments %}
+            <article class="assignment-card" data-assignment-card data-assignment-title="{{ assignment.title|e }}" data-assignment-subject="{{ assignment.subject|e }}" data-assignment-status="{{ assignment.status|e }}">
+                <h2>{{ assignment.title }}</h2>
+                <p class="assignment-meta">
+                    <span>{{ assignment.subject }}</span>
+                    <span>Due {{ assignment.due_date.strftime("%B %d, %Y") }}</span>
+                    <span class="status-badge">{{ assignment.status }}</span>
+                </p>
+                {% if assignment.description %}
+                <p class="assignment-description">{{ assignment.description }}</p>
+                {% endif %}
+                <div class="assignment-actions">
+                    <a class="button button-secondary" href="{{ url_for('edit_assignment', id=assignment.id) }}">Edit</a>
+                    <form action="{{ url_for('delete_assignment', id=assignment.id) }}" method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button class="button button-secondary" type="submit">Delete</button>
+                    </form>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="form-card" data-assignment-empty>
+            <p class="section-kicker">Nothing here yet</p>
+            <h2>Add your first assignment.</h2>
+            <p class="form-footer">Create a record to start tracking your deadlines.</p>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Tasks | StudentHub{% endblock %}
+{% block description %}Keep track of your study tasks in StudentHub.{% endblock %}
+
+{% block content %}
+<section class="page-hero task-page" data-task-page>
+    <div class="container">
+        <div class="assignment-header">
+            <div>
+                <p class="section-kicker">Make progress</p>
+                <h1>Your <span>tasks.</span></h1>
+            </div>
+            <a class="button button-primary" href="{{ url_for('add_task') }}">Add task</a>
+        </div>
+        <p class="form-message" data-task-message role="status" aria-live="polite"></p>
+        <div class="assignment-actions" style="flex-wrap: wrap; margin-bottom: 1.5rem;">
+            <label style="flex: 1 1 220px; min-width: 220px;">
+                <span class="section-kicker" style="display: block; margin-bottom: 0.5rem;">Search</span>
+                <input type="search" data-task-search placeholder="Search by task title" style="width: 100%; padding: 0.9rem 1rem; border-radius: 8px; border: 1px solid #dfe1ef;">
+            </label>
+            <label style="flex: 0 0 180px; min-width: 180px;">
+                <span class="section-kicker" style="display: block; margin-bottom: 0.5rem;">Status</span>
+                <select data-task-status-filter style="width: 100%; padding: 0.9rem 1rem; border-radius: 8px; border: 1px solid #dfe1ef;">
+                    <option value="All">All</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Completed">Completed</option>
+                </select>
+            </label>
+        </div>
+        <form class="form-card task-api-form" data-task-form>
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <p class="section-kicker">Quick add</p>
+            <h2>Add a task with JavaScript.</h2>
+            <div class="auth-form">
+                <label for="api-task-title">Title</label>
+                <input id="api-task-title" name="title" type="text" required>
+                <label for="api-task-description">Description</label>
+                <textarea id="api-task-description" name="description"></textarea>
+                <label for="api-task-due-date">Due date</label>
+                <input id="api-task-due-date" name="due_date" type="date" required>
+                <button class="button button-primary" type="submit">Save with API</button>
+            </div>
+        </form>
+        <div data-task-list></div>
+        <div class="form-card" data-task-empty hidden>
+            <p class="section-kicker">Nothing here yet</p>
+            <h2>Add your first task.</h2>
+            <p class="form-footer">Create a task to keep moving forward.</p>
+        </div>
+    </div>
+</section>
+{% endblock %}

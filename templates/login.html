@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Log in | StudentHub{% endblock %}
+{% block description %}Log in to your StudentHub workspace.{% endblock %}
+
+{% block content %}
+<section class="page-hero form-page">
+    <div class="container form-card">
+        <p class="section-kicker">Welcome back</p>
+        <h1>Log in to <span>StudentHub.</span></h1>
+        {% if error %}
+        <p class="form-error" role="alert">{{ error }}</p>
+        {% endif %}
+        <form class="auth-form" action="{{ url_for('login') }}" method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <label for="email">Email address</label>
+            <input id="email" name="email" type="email" placeholder="you@example.com" required>
+            <label for="password">Password</label>
+            <input id="password" name="password" type="password" placeholder="Your password" required>
+            <button class="button button-primary" type="submit">Log in</button>
+        </form>
+        <p class="form-footer">New to StudentHub? <a href="{{ url_for('signup') }}">Create an account</a></p>
+    </div>
+</section>
+{% endblock %}
