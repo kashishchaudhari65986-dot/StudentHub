@@ -10,13 +10,21 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 app = Flask(__name__)
 database_path = os.path.join(app.root_path, "studenthub.db")
-app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{database_path.replace(os.sep, '/')}"
+database_url = os.environ.get("DATABASE_URL")
+if database_url:
+    if database_url.startswith("postgres://"):
+        database_url = "postgresql+psycopg://" + database_url[len("postgres://"):]
+    elif database_url.startswith("postgresql://"):
+        database_url = "postgresql+psycopg://" + database_url[len("postgresql://"):]
+else:
+    database_url = f"sqlite:///{database_path.replace(os.sep, '/')}"
+app.config["SQLALCHEMY_DATABASE_URI"] = database_url
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app_environment = os.environ.get("STUDENTHUB_ENV", "development").lower()
 is_production = app_environment == "production"
-secret_key = os.environ.get("STUDENTHUB_SECRET_KEY")
+secret_key = os.environ.get("SECRET_KEY") or os.environ.get("STUDENTHUB_SECRET_KEY")
 if is_production and not secret_key:
-    raise RuntimeError("STUDENTHUB_SECRET_KEY must be set in production.")
+    raise RuntimeError("SECRET_KEY must be set in production.")
 app.config["SECRET_KEY"] = secret_key or secrets.token_hex(32)
 app.config.update(
     SESSION_COOKIE_HTTPONLY=True,
@@ -128,6 +136,8 @@ class Task(db.Model):
 
 def migrate_ownership_columns():
     """Add required ownership columns without discarding legacy rows."""
+    if db.engine.dialect.name != "sqlite":
+        return
     inspector = db.inspect(db.engine)
     ownership_columns = {
         table: {column["name"] for column in inspector.get_columns(table)}
@@ -229,7 +239,7 @@ with app.app_context():
     db.session.execute(
         db.text(
             "CREATE UNIQUE INDEX IF NOT EXISTS ux_user_email "
-            "ON user (email)"
+            'ON "user" (email)'
         )
     )
     db.session.commit()
@@ -1197,6 +1207,11 @@ def is_api_request():
     return request.path.startswith("/api/")
 
 
+@app.route("/health")
+def health():
+    return jsonify(status="ok")
+
+
 def error_response(status_code, message):
     if is_api_request():
         return jsonify(error=message), status_code
@@ -1237,4 +1252,5 @@ def handle_internal_error(error):
 
 
 if __name__ == "__main__":
-    app.run(debug=not is_production)
+    port = int(os.environ.get("PORT", "5000"))
+    app.run(host="0.0.0.0", port=port, debug=not is_production)
