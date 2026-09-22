@@ -20,6 +20,8 @@ notes, and tasks in one workspace.
 - Python
 - Flask
 - Flask-SQLAlchemy
+- Gunicorn for production
+- PostgreSQL via Psycopg for production
 - SQLite for local development
 - Jinja templates
 - HTML and CSS
@@ -84,17 +86,21 @@ in the shell or your local environment. Never commit `.env`.
 
 ```text
 STUDENTHUB_ENV=development
-STUDENTHUB_SECRET_KEY=replace_with_a_secure_random_secret
+SECRET_KEY=replace_with_a_secure_random_secret
+DATABASE_URL=
+PORT=5000
 ```
 
-For production, set `STUDENTHUB_ENV=production` and provide a strong,
-random `STUDENTHUB_SECRET_KEY`. The application refuses to start in production
-when that secret is missing. The current application does not load `.env`
+For production, set `STUDENTHUB_ENV=production`, provide a strong random
+`SECRET_KEY`, and set `DATABASE_URL` to the managed PostgreSQL connection URL.
+The application refuses to start in production when `SECRET_KEY` is missing.
+The older `STUDENTHUB_SECRET_KEY` name remains supported for local
+backward-compatibility. The current application does not load `.env`
 automatically, so PowerShell environment variables can be set like this:
 
 ```powershell
 $env:STUDENTHUB_ENV = "development"
-$env:STUDENTHUB_SECRET_KEY = "use-a-local-secret"
+$env:SECRET_KEY = "use-a-local-secret"
 ```
 
 ## Run locally
@@ -108,15 +114,36 @@ python app.py
 Open <http://127.0.0.1:5000> in a browser.
 
 The built-in Flask server is for local development only. Use a production WSGI
-server and HTTPS when deploying.
+server and HTTPS when deploying. On Render, use this start command:
+
+```text
+gunicorn --bind 0.0.0.0:$PORT app:app
+```
+
+Gunicorn is a WSGI server: it runs the Flask application with worker
+processes and accepts public HTTP traffic from the hosting platform. Render
+provides the `PORT` value for the service; local startup defaults to port 5000.
 
 ## Database
 
 StudentHub uses Flask-SQLAlchemy with a local SQLite database at
-`studenthub.db`. The application creates missing tables and preserves existing
-local data. The database is intentionally ignored by Git because it contains
-local user and application data. A future deployment should use a managed
-database and a separate migration process.
+`studenthub.db` when `DATABASE_URL` is not set. This keeps local learning and
+single-user development simple. When `DATABASE_URL` is present, the
+application uses PostgreSQL instead; PostgreSQL is appropriate for a deployed
+multi-user service because it is a managed, concurrent database rather than a
+file in the web service's filesystem.
+
+The application creates missing tables and preserves existing local data.
+`db.create_all()` does not perform schema migrations: it will not safely add,
+rename, or remove columns in an existing production schema. Use a dedicated
+migration process before making future schema changes. The SQLite ownership
+migration remains limited to the existing local database format.
+
+The database is intentionally ignored by Git because it contains local user
+and application data. Render's normal service filesystem is not persistent,
+so production data must be stored in PostgreSQL rather than in the local
+`studenthub.db` file. The public `/health` endpoint returns a small
+`{"status":"ok"}` response for service health checks.
 
 ## Authentication
 

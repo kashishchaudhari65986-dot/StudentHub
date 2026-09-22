@@ -10,21 +10,27 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 app = Flask(__name__)
 database_path = os.path.join(app.root_path, "studenthub.db")
-database_url = os.environ.get("DATABASE_URL")
-if database_url:
-    if database_url.startswith("postgres://"):
-        database_url = "postgresql+psycopg://" + database_url[len("postgres://"):]
-    elif database_url.startswith("postgresql://"):
-        database_url = "postgresql+psycopg://" + database_url[len("postgresql://"):]
-else:
-    database_url = f"sqlite:///{database_path.replace(os.sep, '/')}"
-app.config["SQLALCHEMY_DATABASE_URI"] = database_url
+
+
+def database_uri_from_environment(database_url, local_database_path):
+    if database_url:
+        if database_url.startswith("postgres://"):
+            return "postgresql+psycopg://" + database_url[len("postgres://") :]
+        if database_url.startswith("postgresql://"):
+            return "postgresql+psycopg://" + database_url[len("postgresql://") :]
+        return database_url
+    return f"sqlite:///{local_database_path.replace(os.sep, '/')}"
+
+
+app.config["SQLALCHEMY_DATABASE_URI"] = database_uri_from_environment(
+    os.environ.get("DATABASE_URL"), database_path
+)
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app_environment = os.environ.get("STUDENTHUB_ENV", "development").lower()
 is_production = app_environment == "production"
-secret_key = os.environ.get("SECRET_KEY") or os.environ.get("STUDENTHUB_SECRET_KEY")
+secret_key = os.environ.get("STUDENTHUB_SECRET_KEY") or os.environ.get("SECRET_KEY")
 if is_production and not secret_key:
-    raise RuntimeError("SECRET_KEY must be set in production.")
+    raise RuntimeError("A production secret key must be set in the environment.")
 app.config["SECRET_KEY"] = secret_key or secrets.token_hex(32)
 app.config.update(
     SESSION_COOKIE_HTTPONLY=True,
