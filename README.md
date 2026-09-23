@@ -273,7 +273,27 @@ Ownership-scoped routes and authorization checks were reviewed during deployment
 
 ## Screenshots
 
-Screenshots can be added here.
+These screenshots show the deployed StudentHub application and its main authenticated workflows.
+
+### Homepage
+
+![StudentHub Homepage](screenshots/homepage.png)
+
+### Dashboard
+
+![StudentHub Dashboard](screenshots/dashboard.png)
+
+### Assignment Management
+
+![StudentHub Assignments](screenshots/assignments.png)
+
+### Notes Management
+
+![StudentHub Notes](screenshots/notes.png)
+
+### Task Management
+
+![StudentHub Tasks](screenshots/tasks.png)
 
 ## Future Improvements
 
