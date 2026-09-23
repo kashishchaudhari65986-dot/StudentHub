@@ -1,171 +1,297 @@
 # StudentHub
 
-StudentHub is a Flask web application for organizing student assignments, study
-notes, and tasks in one workspace.
+StudentHub is a Flask-based student productivity platform for managing assignments, study notes, and tasks in one authenticated workspace. It combines server-rendered pages with JavaScript-powered REST APIs and uses SQLite locally with PostgreSQL in production.
+
+## Live Demo
+
+https://studenthub-hnhg.onrender.com
 
 ## Features
 
-- Account signup, login, and logout
-- Password hashing with Werkzeug
-- Dashboard statistics and recent assignments/tasks
-- Assignment, note, and task CRUD operations
-- Assignment search and status filtering
-- Task completion toggling
-- Session-based authentication and ownership checks
-- JSON REST APIs used by the JavaScript interface
-- CSRF protection, input validation, and security headers
+- User registration with secure password hashing
+- Login, logout, and session-based authentication
+- User-specific authorization and ownership checks
+- Assignment CRUD
+- Notes CRUD
+- Tasks CRUD
+- Task completion toggle
+- Dashboard statistics and recent data
+- Client-side search and filtering for assignments, notes, and tasks
+- JSON REST APIs used by the browser interface
+- JavaScript `fetch()` interactions
+- Jinja template inheritance
+- PostgreSQL production database
+- SQLite local development database
+- CSRF protection, server-side validation, and security headers
+- `/health` endpoint for deployment health checks
 
-## Technology stack
+## Tech Stack
+
+### Frontend
+
+- HTML
+- CSS
+- JavaScript
+
+### Backend
 
 - Python
 - Flask
-- Flask-SQLAlchemy
-- Gunicorn for production
-- PostgreSQL via Psycopg for production
+- Jinja
+
+### Database
+
 - SQLite for local development
-- Jinja templates
-- HTML and CSS
-- Vanilla JavaScript with `fetch()`
+- PostgreSQL for production
 
-## Project structure
+### ORM
 
-```text
-studenthub/
-├── app.py                 # Flask application, models, routes, and APIs
-├── requirements.txt       # Python dependencies
-├── .env.example           # Environment variable names and placeholders
-├── templates/             # Jinja HTML templates
-├── static/
-│   ├── style.css          # Application styles
-│   └── script.js          # Browser-side API and UI behavior
-├── studenthub.db          # Local database (ignored by Git)
-└── myenv/                # Local virtual environment (ignored by Git)
+- SQLAlchemy / Flask-SQLAlchemy
+
+### Production
+
+- Gunicorn
+- Render
+
+### Version Control
+
+- Git
+- GitHub
+
+## Architecture
+
+```mermaid
+flowchart TD
+	Browser --> Frontend[HTML / CSS / JavaScript]
+	Frontend --> Flask
+	Flask --> Templates[Jinja templates]
+	Flask --> APIs[REST APIs]
+	Flask --> Auth[Authentication / Authorization]
+	Flask --> SQLAlchemy
+	SQLAlchemy --> PostgreSQL[PostgreSQL production]
+	SQLAlchemy --> SQLite[SQLite local]
 ```
 
-The project also contains `.vscode/settings.json`, which points this local
-workspace at the existing Windows virtual environment. It is machine-specific
-and is ignored by Git.
+The browser receives application pages from Flask and uses JavaScript `fetch()` for interactive data operations. Flask renders Jinja templates, exposes JSON endpoints, and enforces authentication, CSRF protection, validation, and ownership checks. Flask-SQLAlchemy provides the database layer, with the database URL selecting PostgreSQL in production and SQLite for local development.
 
-## Setup on Windows
+## Main Modules
 
-Open PowerShell in the project directory.
+- **Authentication:** Users can register, log in, and log out. Passwords are hashed before storage, and protected pages use session-based authentication.
+- **Dashboard:** Shows assignment, note, and task statistics along with recent assignments and tasks.
+- **Assignments:** Users can create, view, edit, delete, search, and filter assignments by status.
+- **Notes:** Users can create, view, edit, delete, search, and filter study notes.
+- **Tasks:** Users can create, view, edit, delete, search, filter, and toggle task completion.
+- **REST APIs:** JSON endpoints support dashboard data and CRUD operations used by the JavaScript interface.
 
-### 1. Create a virtual environment
+## CRUD
 
-The project already uses `myenv`. For a fresh checkout, create a new local
-environment with:
+Assignment management follows the standard CRUD lifecycle:
+
+- **Create:** Add an assignment with a title, subject, due date, description, and status.
+- **Read:** Load the authenticated user's assignments through the page or JSON API.
+- **Update:** Edit assignment details or status.
+- **Delete:** Remove an assignment owned by the authenticated user.
+
+Notes and tasks use the same create, read, update, and delete pattern. Tasks also support a completion toggle.
+
+## Security
+
+StudentHub includes several application-level security measures:
+
+- Password hashing with Werkzeug
+- HTTP-only and environment-aware session cookies
+- CSRF protection for state-changing requests
+- Server-side input validation
+- Authentication and authorization checks on protected operations
+- User ownership checks for assignments, notes, and tasks
+- Jinja autoescaping for rendered templates
+- Environment-based secret configuration
+- Production debug mode disabled
+- Security response headers, including CSP and frame protection
+- Sensitive files and local databases ignored by Git
+
+The application uses these protections as part of its implementation, but no application should be considered completely secure without ongoing review and testing.
+
+## Database
+
+Local development uses SQLite stored in the local `studenthub.db` file. This keeps setup simple and avoids requiring a database server for development.
+
+Production uses managed Render PostgreSQL through `DATABASE_URL`. A managed PostgreSQL service is better suited to a deployed multi-process web service than a local SQLite file and keeps production data separate from local development data.
+
+## Project Structure
+
+```text
+StudentHub/
+├── app.py                 # Flask app, models, routes, and REST APIs
+├── requirements.txt       # Python and production dependencies
+├── .env.example           # Environment variable names and placeholders
+├── .gitignore             # Ignored secrets, databases, environments, and caches
+├── templates/             # Jinja templates and page layouts
+│   ├── base.html
+│   ├── dashboard.html
+│   ├── assignments.html
+│   ├── notes.html
+│   └── tasks.html
+├── static/
+│   ├── style.css          # Application styles
+│   └── script.js          # Fetch-based browser interactions
+├── studenthub.db          # Local SQLite data; ignored by Git
+└── myenv/                 # Local virtual environment; ignored by Git
+```
+
+The repository also contains the remaining page-specific templates for authentication, informational pages, and create/edit forms. Local environment and database entries in the tree are development-only and are not intended for GitHub.
+
+## API Endpoints
+
+All data APIs require an authenticated session. State-changing requests also require the CSRF token supplied by the page.
+
+### Assignments
+
+| Method | Endpoint | Purpose |
+| --- | --- | --- |
+| GET | `/api/assignments` | List the current user's assignments |
+| POST | `/api/assignments` | Create an assignment |
+| PUT | `/api/assignments/<id>` | Update an owned assignment |
+| DELETE | `/api/assignments/<id>` | Delete an owned assignment |
+
+### Notes
+
+| Method | Endpoint | Purpose |
+| --- | --- | --- |
+| GET | `/api/notes` | List the current user's notes |
+| POST | `/api/notes` | Create a note |
+| PUT | `/api/notes/<id>` | Update an owned note |
+| DELETE | `/api/notes/<id>` | Delete an owned note |
+
+### Tasks
+
+| Method | Endpoint | Purpose |
+| --- | --- | --- |
+| GET | `/api/tasks` | List the current user's tasks |
+| POST | `/api/tasks` | Create a task |
+| PUT | `/api/tasks/<id>` | Update an owned task |
+| DELETE | `/api/tasks/<id>` | Delete an owned task |
+| POST | `/api/tasks/<id>/toggle` | Toggle task completion |
+
+### Dashboard
+
+| Method | Endpoint | Purpose |
+| --- | --- | --- |
+| GET | `/api/dashboard/stats` | Return dashboard counts |
+| GET | `/api/dashboard/recent-assignments` | Return recent assignments |
+| GET | `/api/dashboard/recent-tasks` | Return recent tasks |
+
+The deployment health endpoint is `GET /health` and returns a small JSON status response without requiring authentication.
+
+## Local Setup
+
+These commands are for Windows PowerShell.
+
+### 1. Clone the repository
+
+```powershell
+git clone https://github.com/kashishchaudhari65986-dot/StudentHub.git
+cd StudentHub
+```
+
+### 2. Create a virtual environment
 
 ```powershell
 py -m venv myenv
 ```
 
-Do not commit the environment directory.
-
-### 2. Activate the environment
+### 3. Activate the environment
 
 ```powershell
 .\myenv\Scripts\Activate.ps1
 ```
 
-If PowerShell blocks activation, use the interpreter directly instead:
+If PowerShell blocks activation, use the environment's interpreter directly:
 
 ```powershell
 .\myenv\Scripts\python.exe --version
 ```
 
-### 3. Install dependencies
+### 4. Install dependencies
 
 ```powershell
 python -m pip install -r requirements.txt
 ```
 
-## Environment variables
+### 5. Configure environment variables
 
-Copy `.env.example` to `.env` for local reference and configure the variables
-in the shell or your local environment. Never commit `.env`.
-
-```text
-STUDENTHUB_ENV=development
-SECRET_KEY=replace_with_a_secure_random_secret
-DATABASE_URL=
-PORT=5000
-```
-
-For production, set `STUDENTHUB_ENV=production`, provide a strong random
-`SECRET_KEY`, and set `DATABASE_URL` to the managed PostgreSQL connection URL.
-The application refuses to start in production when `SECRET_KEY` is missing.
-The older `STUDENTHUB_SECRET_KEY` name remains supported for local
-backward-compatibility. The current application does not load `.env`
-automatically, so PowerShell environment variables can be set like this:
+Set a local secret in PowerShell. Leave `DATABASE_URL` unset to use the local SQLite database, or set it to a PostgreSQL connection string when testing against PostgreSQL.
 
 ```powershell
-$env:STUDENTHUB_ENV = "development"
-$env:SECRET_KEY = "use-a-local-secret"
+$env:STUDENTHUB_SECRET_KEY = "use-a-local-secret"
 ```
 
-## Run locally
-
-With the virtual environment active:
+### 6. Run Flask locally
 
 ```powershell
 python app.py
 ```
 
-Open <http://127.0.0.1:5000> in a browser.
+### 7. Open the application
 
-The built-in Flask server is for local development only. Use a production WSGI
-server and HTTPS when deploying. On Render, use this start command:
+Open http://127.0.0.1:5000 in a browser.
 
-```text
-gunicorn --bind 0.0.0.0:$PORT app:app
+The built-in Flask server is intended for local development. Render uses Gunicorn for the deployed service.
+
+## Environment Variables
+
+Only variable names are documented here; values belong in the local shell or Render environment settings and should never be committed.
+
+- `STUDENTHUB_SECRET_KEY`: Secret used to sign Flask sessions. Use a strong random value in production.
+- `DATABASE_URL`: Optional database connection string. When set in production, it selects the managed PostgreSQL database; when unset locally, StudentHub falls back to SQLite.
+
+## Deployment
+
+```mermaid
+flowchart TD
+	GitHub[GitHub main branch] --> Render[Render Web Service]
+	Render --> Gunicorn[Gunicorn]
+	Gunicorn --> Flask[Flask application]
+	Flask --> PostgreSQL[Render PostgreSQL]
 ```
 
-Gunicorn is a WSGI server: it runs the Flask application with worker
-processes and accepts public HTTP traffic from the hosting platform. Render
-provides the `PORT` value for the service; local startup defaults to port 5000.
+The live application is connected to the public GitHub repository's `main` branch through a Render Web Service. Render installs `requirements.txt`, starts the application with Gunicorn, and supplies the production PostgreSQL connection through the service environment. Render uses `/health` to check service health.
 
-## Database
+## Testing
 
-StudentHub uses Flask-SQLAlchemy with a local SQLite database at
-`studenthub.db` when `DATABASE_URL` is not set. This keeps local learning and
-single-user development simple. When `DATABASE_URL` is present, the
-application uses PostgreSQL instead; PostgreSQL is appropriate for a deployed
-multi-user service because it is a managed, concurrent database rather than a
-file in the web service's filesystem.
+The deployed application was verified with:
 
-The application creates missing tables and preserves existing local data.
-`db.create_all()` does not perform schema migrations: it will not safely add,
-rename, or remove columns in an existing production schema. Use a dedicated
-migration process before making future schema changes. The SQLite ownership
-migration remains limited to the existing local database format.
+- Signup, login, dashboard access, and logout using a disposable test account
+- Authenticated assignment, note, and task API operations
+- Assignment, note, and task create, update, delete, and task-toggle operations
+- Dashboard statistics and recent-data API responses
+- Session rejection after logout
+- Health endpoint and core page checks for `/`, `/login`, and `/signup`
+- Deployment verification against the live Render service and current `main` commit
 
-The database is intentionally ignored by Git because it contains local user
-and application data. Render's normal service filesystem is not persistent,
-so production data must be stored in PostgreSQL rather than in the local
-`studenthub.db` file. The public `/health` endpoint returns a small
-`{"status":"ok"}` response for service health checks.
+Ownership-scoped routes and authorization checks were reviewed during deployment verification. A dedicated cross-account isolation test suite would be a useful future addition.
 
-## Authentication
+## Screenshots
 
-Users sign up with an email address and password. Passwords are stored as
-Werkzeug hashes rather than plain text. A successful login stores the
-authenticated user's ID in a signed Flask session cookie. Protected routes use
-that session and apply ownership checks so users can access only their own
-assignments, notes, and tasks.
+Screenshots can be added here.
 
-## REST APIs and JavaScript
+## Future Improvements
 
-The assignment, note, task, and dashboard API routes return JSON. The browser
-code in `static/script.js` calls these routes with `fetch()` to load records,
-create and update data, delete records, toggle task completion, and refresh
-dashboard statistics.
+Possible future improvements include:
 
-State-changing API requests include the CSRF token supplied by the page. The
-server validates the token, authenticates the session, validates the JSON
-payload, and applies the current user's ownership scope before changing data.
+- Email reminders
+- Calendar integration
+- Richer analytics
+- File attachments
+- Notifications
+- A mobile version
 
-## Git preparation
+These are ideas for future development, not current features.
 
-The repository should include application source, templates, static assets,
-`requirements.txt`, `.env.example`, and this README. It should not include
-`myenv`, `.env`, cache files, `.vscode`, or local SQLite database files.
+## License
+
+This repository does not currently include a license. A license can be added later if the project is intended for reuse.
+
+## Author
+
+Kashish Chaudhari
