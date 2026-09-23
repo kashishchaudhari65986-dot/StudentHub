@@ -150,6 +150,7 @@
             form.addEventListener("submit", async (event) => {
                 event.preventDefault();
                 const payload = Object.fromEntries(new FormData(form));
+                delete payload.csrf_token;
                 try {
                     await apiRequest("/api/assignments", {
                         method: "POST",
